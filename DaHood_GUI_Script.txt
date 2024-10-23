@@ -1,0 +1,130 @@
+
+-- Da Hood GUI Script for Roblox (Customizable Keybinds, Toggle Features, Visuals)
+-- Ensure you have a Roblox Executor to run this script, as it's not supported by Roblox Studio
+
+-- GUI Library (Smooth, Movable, Customizable)
+local guiLibrary = {}
+guiLibrary.__index = guiLibrary
+
+-- Utility Function to create a new GUI element
+local function createGuiElement(type, name, properties)
+    local newElement = Instance.new(type)
+    newElement.Name = name
+    for prop, value in pairs(properties) do
+        newElement[prop] = value
+    end
+    return newElement
+end
+
+-- Create the main GUI Frame
+local mainGui = createGuiElement("ScreenGui", "MainGui", {ResetOnSpawn = false})
+local mainFrame = createGuiElement("Frame", "MainFrame", {
+    BackgroundColor3 = Color3.new(0.1, 0.1, 0.1),
+    Size = UDim2.new(0, 600, 0, 400),
+    Position = UDim2.new(0.5, -300, 0.5, -200),
+    Draggable = true,
+    Active = true
+})
+mainFrame.Parent = mainGui
+
+-- Add a background shadow
+local shadow = createGuiElement("ImageLabel", "Shadow", {
+    Size = UDim2.new(1, 10, 1, 10),
+    Position = UDim2.new(0, -5, 0, -5),
+    BackgroundTransparency = 1,
+    Image = "rbxassetid://1316045217", -- Background shadow image
+    ImageTransparency = 0.5
+})
+shadow.Parent = mainFrame
+
+-- Checkbox functionality (for opening/closing the GUI)
+local function createCheckbox(keybind, description, parent)
+    local checkboxFrame = createGuiElement("Frame", "Checkbox_"..description, {
+        Size = UDim2.new(1, -10, 0, 30),
+        BackgroundTransparency = 0.5,
+        BorderSizePixel = 0
+    })
+    local checkboxText = createGuiElement("TextLabel", "Label_"..description, {
+        Size = UDim2.new(0.8, 0, 1, 0),
+        Text = description,
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundTransparency = 1
+    })
+    checkboxText.Parent = checkboxFrame
+
+    -- User-Defined Keybind Handler
+    local keyInput = createGuiElement("TextButton", "KeyInput", {
+        Size = UDim2.new(0.2, 0, 1, 0),
+        Text = keybind,
+        TextColor3 = Color3.new(1, 0, 0),
+        BackgroundTransparency = 1
+    })
+    keyInput.MouseButton1Click:Connect(function()
+        keyInput.Text = "Press Key"
+        local inputConnection
+        inputConnection = game:GetService("UserInputService").InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                keyInput.Text = input.KeyCode.Name
+                keybind = input.KeyCode
+                inputConnection:Disconnect()
+            end
+        end)
+    end)
+    keyInput.Parent = checkboxFrame
+    checkboxFrame.Parent = parent
+end
+
+-- Create Visuals Tab
+local visualsTab = createGuiElement("Frame", "VisualsTab", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1
+})
+visualsTab.Parent = mainFrame
+
+createCheckbox("L", "Player Highlights", visualsTab)
+createCheckbox("K", "Name Tags", visualsTab)
+
+-- Toggle Functionality for Aimbot Features (e.g., Sticky Aim)
+local function createToggleOption(description, parent)
+    local toggleFrame = createGuiElement("Frame", "Toggle_"..description, {
+        Size = UDim2.new(1, -10, 0, 30),
+        BackgroundTransparency = 0.5,
+        BorderSizePixel = 0
+    })
+    local toggleText = createGuiElement("TextLabel", "Label_"..description, {
+        Size = UDim2.new(0.8, 0, 1, 0),
+        Text = description,
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundTransparency = 1
+    })
+    toggleText.Parent = toggleFrame
+
+    local toggleDropdown = createGuiElement("TextButton", "Dropdown", {
+        Size = UDim2.new(0.2, 0, 1, 0),
+        Text = "Toggle",
+        TextColor3 = Color3.new(0, 1, 0),
+        BackgroundTransparency = 1
+    })
+    local toggleModes = {"TOGGLE", "HOLD", "ALWAYS ON"}
+    local currentMode = 1
+
+    toggleDropdown.MouseButton1Click:Connect(function()
+        currentMode = currentMode % #toggleModes + 1
+        toggleDropdown.Text = toggleModes[currentMode]
+    end)
+    toggleDropdown.Parent = toggleFrame
+    toggleFrame.Parent = parent
+end
+
+-- Add toggles for Legit Tab Features
+local legitTab = createGuiElement("Frame", "LegitTab", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundTransparency = 1
+})
+legitTab.Parent = mainFrame
+
+createToggleOption("Sticky Aim", legitTab)
+createToggleOption("Recoil Control", legitTab)
+
+-- Finalize GUI setup
+mainGui.Parent = game.CoreGui
